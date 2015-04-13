@@ -376,8 +376,7 @@ do
 		if [ $cfg_platform_name = "winrt_8.1" ] || [ $cfg_platform_name = "wp_8.1" ];then
 			make
 			cd ${top_dir}/contrib/src/${lib}
-			echo `pwd`
-			#${cfg_platform_name}.bat ${build_mode} ${arch}
+			${cfg_platform_name}.bat ${build_mode} ${arch}
 		else
 			make
 		fi
@@ -391,48 +390,49 @@ do
             mkdir -p $local_library_install_path
         fi
 
-        #determine the .a achive name with a specified libraries
-        parse_original_lib_name=${lib}_original_name
-        original_archive_name=${!parse_original_lib_name}
-        if [ -z $original_archive_name ];then
-            original_archive_name=$archive_name
-        fi
-
-        #copy .a archive from install-platform folder
-        cp $top_dir/contrib/$install_library_path/$arch/lib/lib$original_archive_name.a $local_library_install_path/lib$archive_name.a
-
-        #copy dependent .a archive
-        parse_dependent_archive_list=${lib}_dependent_archive_list
-        original_dependent_archive_list=${!parse_dependent_archive_list}
-        if [ ! -z $original_dependent_archive_list ];then
-            echo "Copying dependent archives..."
-            original_dependent_archive_list=(${original_dependent_archive_list//,/ })
-
-            for dep_archive in ${original_dependent_archive_list[@]}
-            do
-                local_library_install_path=$cfg_platform_name/$original_arch_name/libs
-                mkdir -p $local_library_install_path
-                cp $top_dir/contrib/$install_library_path/$arch/lib/lib${dep_archive}.a $local_library_install_path/lib${dep_archive}.a
-
-            done
-        fi
-
-
-        echo "Copying needed header files..."
-        #determine the real folder name
-        parse_original_library_folder_name=${lib}_header_files_folder
-        library_include_folder_name=${!parse_original_library_folder_name}
-        if [ -z $library_include_folder_name ];then
-            library_include_folder_name=$archive_name
-        fi
-        
-		#Handle install for winrt platforms
 		if [ $cfg_platform_name = "winrt_8.1" ] || [ $cfg_platform_name = "wp_8.1" ];then
+			#Handle install for winrt platforms
 			current_dir=`pwd`
 			cd ${top_dir}/contrib/src/${lib}
 			winrt_install.bat ${cfg_platform_name} ${build_mode} ${arch} ${current_dir}/${local_library_install_path}
 			cd -
+		else
+			#determine the .a archive name with a specified libraries
+			parse_original_lib_name=${lib}_original_name
+			original_archive_name=${!parse_original_lib_name}
+			if [ -z $original_archive_name ];then
+				original_archive_name=$archive_name
+			fi
+
+			#copy .a archive from install-platform folder
+			cp $top_dir/contrib/$install_library_path/$arch/lib/lib$original_archive_name.a $local_library_install_path/lib$archive_name.a
+
+			#copy dependent .a archive
+			parse_dependent_archive_list=${lib}_dependent_archive_list
+			original_dependent_archive_list=${!parse_dependent_archive_list}
+			if [ ! -z $original_dependent_archive_list ];then
+				echo "Copying dependent archives..."
+				original_dependent_archive_list=(${original_dependent_archive_list//,/ })
+
+				for dep_archive in ${original_dependent_archive_list[@]}
+				do
+					local_library_install_path=$cfg_platform_name/$original_arch_name/libs
+					mkdir -p $local_library_install_path
+					cp $top_dir/contrib/$install_library_path/$arch/lib/lib${dep_archive}.a $local_library_install_path/lib${dep_archive}.a
+
+				done
+			fi
+
+			echo "Copying needed header files..."
+			#determine the real folder name
+			parse_original_library_folder_name=${lib}_header_files_folder
+			library_include_folder_name=${!parse_original_library_folder_name}
+			if [ -z $library_include_folder_name ];then
+				library_include_folder_name=$archive_name
+			fi
 		fi
+
+
 
         #copy header files for ios & mac
         if [ $cfg_platform_name = "ios" ] || [ $cfg_platform_name = "mac" ];then
@@ -465,9 +465,8 @@ do
         fi
     done
 
-    # echo $cfg_build_fat_library
-    if [ $cfg_build_fat_library="yes" ];then
-
+    #echo $cfg_build_fat_library
+    if [ $cfg_build_fat_library = "yes" ];then
         create_fat_library $archive_name
 
         parse_dependent_archive_list=${lib}_dependent_archive_list

@@ -14,6 +14,6 @@ angle: angle-git.tar.xz .sum-angle
 	$(MOVE)
 
 .angle: angle toolchain.cmake
-	cd $< && $(HOSTVARS) ${CMAKE} -DFLATBUFFERS_BUILD_TESTS=OFF
+	cd $< && $(HOSTVARS) ${CMAKE}
 	cd $< && $(MAKE)  VERBOSE=1 install
 	touch $@
