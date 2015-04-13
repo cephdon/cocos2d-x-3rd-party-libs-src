@@ -38,7 +38,7 @@ function usage()
     echo "    ./build.sh  -p=PLATFORM (-l | --list)"
     echo ""
     echo "Arguments:"
-    echo "    PLATFORM:    Platform names, valid values are: mac,ios,android,win32,tizen,linux"
+    echo "    PLATFORM:    Platform names, valid values are: mac,ios,android,win32,tizen,linux,winrt_8.1,wp_8.1"
     echo "    LIBRARY:     Library names, valid values are platform dependent(png,jpeg,lua,chipmunk,etc)"
     echo "    ARCH:        Build arches, valid values are platform dependent(arm,arm64,armv7,i386,etc)"
     echo "    MODE:        Build mode, valid values are: release and debug"
@@ -330,18 +330,18 @@ do
         MY_TARGET_ARCH=$original_arch_name
         export MY_TARGET_ARCH
 
-        if [ ${cfg_is_cross_compile} = "yes" ];then
+        if [ ${cfg_is_cross_compile}="yes" ];then
             cross_compile_toolchain_path=cfg_${arch}_toolchain_bin
             echo "toolchain path is ${!cross_compile_toolchain_path}"
             export PATH="${!cross_compile_toolchain_path}:${PATH}"
         fi
 
         # TODO: add more build and target options here
-        if [ $cfg_platform_name = "ios" ];then
+        if [ $cfg_platform_name="ios" ];then
             export BUILDFORIOS="yes"
         fi
 
-        if [ $cfg_platform_name = "android" ];then
+        if [ $cfg_platform_name="android" ];then
             export ANDROID_GCC_VERSION=$build_gcc_version
             export ANDROID_API=android-$build_api
         fi
@@ -353,20 +353,34 @@ do
         PREFIX="${top_dir}/contrib/install-${cfg_platform_name}/${arch}"
 
         my_target_host=cfg_${arch}_host_machine
-        if [ $cfg_is_cross_compile = "no" ];then
+        if [ $cfg_is_cross_compile="no" ];then
             cfg_build_machine=${!my_target_host}
         fi
+
+		echo my_target_host = ${my_target_host}
+
+		# do some cleanup work
+		echo cfg_platform_name = $cfg_platform_name
+		echo cfg_build_machine = $cfg_build_machine
+		echo ${!my_target_host}
+		echo PREFIX = ${PREFIX}
 
         ../bootstrap --enable-$lib \
                      --build=$cfg_build_machine \
                      --host=${!my_target_host} \
                      --prefix=${PREFIX}
 
-
         echo "MY_TARGET_ARCH := ${MY_TARGET_ARCH}" >> config.mak
         echo "OPTIM := ${OPTIM}" >> config.mak
 
-        make
+		if [ $cfg_platform_name = "winrt_8.1" ] || [ $cfg_platform_name = "wp_8.1" ];then
+			make
+			cd ${top_dir}/contrib/src/${lib}
+			echo `pwd`
+			#${cfg_platform_name}.bat ${build_mode} ${arch}
+		else
+			make
+		fi
 
         cd -
 
@@ -391,7 +405,7 @@ do
         parse_dependent_archive_list=${lib}_dependent_archive_list
         original_dependent_archive_list=${!parse_dependent_archive_list}
         if [ ! -z $original_dependent_archive_list ];then
-            echo "copying dependent archives..."
+            echo "Copying dependent archives..."
             original_dependent_archive_list=(${original_dependent_archive_list//,/ })
 
             for dep_archive in ${original_dependent_archive_list[@]}
@@ -404,7 +418,7 @@ do
         fi
 
 
-        echo "Copying needed heder files"
+        echo "Copying needed header files..."
         #determine the real folder name
         parse_original_library_folder_name=${lib}_header_files_folder
         library_include_folder_name=${!parse_original_library_folder_name}
@@ -412,7 +426,14 @@ do
             library_include_folder_name=$archive_name
         fi
         
-        
+		#Handle install for winrt platforms
+		if [ $cfg_platform_name = "winrt_8.1" ] || [ $cfg_platform_name = "wp_8.1" ];then
+			current_dir=`pwd`
+			cd ${top_dir}/contrib/src/${lib}
+			winrt_install.bat ${cfg_platform_name} ${build_mode} ${arch} ${current_dir}/${local_library_install_path}
+			cd -
+		fi
+
         #copy header files for ios & mac
         if [ $cfg_platform_name = "ios" ] || [ $cfg_platform_name = "mac" ];then
             if [ ! -d $top_dir/build/$cfg_platform_name/include/$library_include_folder_name ];then
@@ -429,7 +450,6 @@ do
         if [ $cfg_platform_name = "ios" ] || [ $cfg_platform_name = "mac" ];then
             destination_header_path=$cfg_platform_name/include/$library_include_folder_name
         fi
-
         
         if [ -d "$src_directory" ];then
             cp  -r $src_directory/* $destination_header_path
@@ -446,7 +466,7 @@ do
     done
 
     # echo $cfg_build_fat_library
-    if [ $cfg_build_fat_library = "yes" ];then
+    if [ $cfg_build_fat_library="yes" ];then
 
         create_fat_library $archive_name
 
