@@ -69,8 +69,8 @@ set SOLUTION=libogg\win32\VS2015\libogg-win10-universal.sln
 echo Building Ogg Windows 10.0 Release/x86...
 msbuild %SOLUTION% /p:Configuration="Release" /p:Platform="x86" /m
 
-rem echo Building Ogg Windows 10.0 Release/x64...
-rem msbuild %SOLUTION% /p:Configuration="Release" /p:Platform="x64" /m
+echo Building Ogg Windows 10.0 Release/x64...
+msbuild %SOLUTION% /p:Configuration="Release" /p:Platform="x64" /m
 
 echo Building Ogg Windows 10.0 Release/ARM...
 msbuild %SOLUTION% /p:Configuration="Release" /p:Platform="ARM" /m
@@ -80,8 +80,8 @@ set SOLUTION=libvorbis\win32\VS2015\libvorbis-win10-universal.sln
 echo Building Ogg Windows 10.0 Release/x86...
 msbuild %SOLUTION% /p:Configuration="Release" /p:Platform="x86" /m
 
-rem echo Building Ogg Windows 10.0 Release/x64...
-rem msbuild %SOLUTION% /p:Configuration="Release" /p:Platform="x64" /m
+echo Building Ogg Windows 10.0 Release/x64...
+msbuild %SOLUTION% /p:Configuration="Release" /p:Platform="x64" /m
 
 echo Building Ogg Windows 10.0 Release/ARM...
 msbuild %SOLUTION% /p:Configuration="Release" /p:Platform="ARM" /m
@@ -100,6 +100,7 @@ xcopy "temp\libvorbis\include\vorbis" "install\win10-specific\OggDecoder\include
 
 rem copy libs and dlls
 call:CopyOggWin10Files win32
+call:CopyOggWin10Files x64
 call:CopyOggWin10Files arm
 call:CopyOggFiles Windows win32 winrt_8.1 
 call:CopyOggFiles Windows arm winrt_8.1 
