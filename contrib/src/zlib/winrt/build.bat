@@ -66,11 +66,13 @@ pushd temp
 			set INSTALL=%CD%\install
 			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 		popd
-		rem mkdir x64
-		rem pushd x64
-			rem set INSTALL=%CD%\install
-			rem cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
-		rem popd
+		
+		mkdir x64
+		pushd x64
+			set INSTALL=%CD%\install
+			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
+		popd
+		
 		mkdir arm
 		pushd arm
 			set INSTALL=%CD%\install
@@ -100,9 +102,9 @@ pushd temp
 	msbuild win10\win32\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
 	msbuild win10\win32\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
 
-	rem echo Building zlib Windows 10.0 Release/x64...
-	rem msbuild win10\x64\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="x64" /m
-	rem msbuild win10\x64\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="x64" /m
+	echo Building zlib Windows 10.0 Release/x64...
+	msbuild win10\x64\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="x64" /m
+	msbuild win10\x64\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="x64" /m
 
 	echo Building zlib Windows 10.0 Release/ARM...
 	msbuild win10\arm\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="ARM" /m
@@ -145,11 +147,11 @@ xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
 xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
 xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
 
-rem set INDIR=temp\win10\x64\install
-rem set OUTDIR=install\win10-specific\zlib\prebuilt\x64
-rem xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
-rem xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
-rem xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
+set INDIR=temp\win10\x64\install
+set OUTDIR=install\win10-specific\zlib\prebuilt\x64
+xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
+xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
+xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
 
 set INDIR=temp\win10\arm\install
 set OUTDIR=install\win10-specific\zlib\prebuilt\arm
