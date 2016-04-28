@@ -159,8 +159,6 @@ mv "%OUTDIR%\websockets_static.lib" "%OUTDIR%\libwebsockets.lib"
 
 echo libwebsockets build complete.
 
-pause
-
 endlocal
 goto:eof
 ::End of script
