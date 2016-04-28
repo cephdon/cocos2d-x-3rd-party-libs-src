@@ -112,9 +112,9 @@ pushd temp
 	msbuild win10\win32\chipmunk.sln /p:Configuration="MinSizeRel" /p:Platform="Win32" /p:ForceImportBeforeCppTargets=%PROPS% /m
 	msbuild win10\win32\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="Win32" /p:ForceImportBeforeCppTargets=%PROPS% /m
 	
-	rem echo Building Chipmunk Windows 10.0 Store Release/x64...
-	rem msbuild win10\x64\chipmunk.sln /p:Configuration="MinSizeRel" /p:Platform="x64" /p:ForceImportBeforeCppTargets=%PROPS% /m
-	rem msbuild win10\x64\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="x64" /p:ForceImportBeforeCppTargets=%PROPS% /m
+	echo Building Chipmunk Windows 10.0 Store Release/x64...
+	msbuild win10\x64\chipmunk.sln /p:Configuration="MinSizeRel" /p:Platform="x64" /p:ForceImportBeforeCppTargets=%PROPS% /m
+	msbuild win10\x64\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="x64" /p:ForceImportBeforeCppTargets=%PROPS% /m
 
 	echo Building Chipmunk Windows 10.0 Store Release/ARM...
 	msbuild win10\arm\chipmunk.sln /p:Configuration="MinSizeRel" /p:Platform="ARM" /p:ForceImportBeforeCppTargets=%PROPS% /m
@@ -144,9 +144,9 @@ set INDIR=temp\win10\win32\install
 set OUTDIR=install\chipmunk\prebuilt\win10\win32
 xcopy "%INDIR%\lib\chipmunk.lib" "%OUTDIR%\*" /iycq
 
-rem set INDIR=temp\win10\x64\install
-rem set OUTDIR=install\chipmunk\prebuilt\win10\x64
-rem xcopy "%INDIR%\lib\chipmunk.lib" "%OUTDIR%\*" /iycq
+set INDIR=temp\win10\x64\install
+set OUTDIR=install\chipmunk\prebuilt\win10\x64
+xcopy "%INDIR%\lib\chipmunk.lib" "%OUTDIR%\*" /iycq
 
 set INDIR=temp\win10\arm\install
 set OUTDIR=install\chipmunk\prebuilt\win10\arm
