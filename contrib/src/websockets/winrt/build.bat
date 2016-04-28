@@ -69,6 +69,11 @@ pushd temp
 			set INSTALL=%CD%\install
 			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 		popd
+		mkdir x64
+		pushd x64
+			set INSTALL=%CD%\install
+			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
+		popd
 		mkdir arm
 		pushd arm
 			set INSTALL=%CD%\install
@@ -85,6 +90,7 @@ pushd temp
 	call "%VS140COMNTOOLS%vsvars32.bat"
 	call:DO_BUILD win10 win32 MinSizeRel
 	call:DO_BUILD win10 arm MinSizeRel
+	call:DO_BUILD win10 x64 MinSizeRel
 	
 	call:DO_BUILD wp_8.1 win32 MinSizeRel
 	call:DO_BUILD wp_8.1 arm MinSizeRel
@@ -141,6 +147,11 @@ set OUTDIR=install\websockets\prebuilt\win10\win32
 xcopy "%INDIR%\lib\websockets_static.lib" "%OUTDIR%\*" /iycq
 mv "%OUTDIR%\websockets_static.lib" "%OUTDIR%\libwebsockets.lib"
 
+set INDIR=temp\win10\x64\install
+set OUTDIR=install\websockets\prebuilt\win10\x64
+xcopy "%INDIR%\lib\websockets_static.lib" "%OUTDIR%\*" /iycq
+mv "%OUTDIR%\websockets_static.lib" "%OUTDIR%\libwebsockets.lib"
+
 set INDIR=temp\win10\arm\install
 set OUTDIR=install\websockets\prebuilt\win10\arm
 xcopy "%INDIR%\lib\websockets_static.lib" "%OUTDIR%\*" /iycq
@@ -148,6 +159,7 @@ mv "%OUTDIR%\websockets_static.lib" "%OUTDIR%\libwebsockets.lib"
 
 echo libwebsockets build complete.
 
+pause
 
 endlocal
 goto:eof
