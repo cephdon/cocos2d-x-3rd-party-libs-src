@@ -170,6 +170,31 @@ pushd temp
 			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS% %SRC%
 		popd
 		
+		mkdir x64
+		pushd x64
+			set INSTALL=%CD%\install
+			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlib.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlib.lib"
+			
+			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
+
+			set SSL_EAY_LIBRARY_DEBUG=-DSSL_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
+			set SSL_EAY_DEBUG=-DSSL_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
+			set SSL_EAY_LIBRARY_RELEASE=-DSSL_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
+			set SSL_EAY_RELEASE=-DSSL_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
+			
+			set LIB_EAY_LIBRARY_DEBUG=-DLIB_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
+			set LIB_EAY_DEBUG=-DLIB_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
+			set LIB_EAY_LIBRARY_RELEASE=-DLIB_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
+			set LIB_EAY_RELEASE=-DLIB_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
+
+			
+			set ARGS=%CMAKE_ARGS% %ZIB_INCLUDE_DIR% %ZLIB_LIBRARY_RELEASE% %ZLIB_LIBRARY_DEBUG% %OPENSSL_INCLUDE_DIR% %SSL_EAY_LIBRARY_DEBUG% %SSL_EAY_DEBUG% %SSL_EAY_LIBRARY_RELEASE% %SSL_EAY_RELEASE% %LIB_EAY_LIBRARY_DEBUG% %LIB_EAY_DEBUG% %LIB_EAY_LIBRARY_RELEASE% %LIB_EAY_RELEASE%
+			echo %ARGS%
+			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS% %SRC%
+		popd
+		
 		mkdir arm
 		pushd arm
 			set INSTALL=%CD%\install
@@ -228,6 +253,12 @@ pushd temp
 		msbuild CURL.sln /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
 		msbuild Install.vcxproj /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
 	popd
+	
+	pushd win10\x64\
+		echo Building curl Windows 10.0 MinSizeRel/x64...
+		msbuild CURL.sln /p:Configuration="MinSizeRel" /p:Platform="x64" /m
+		msbuild Install.vcxproj /p:Configuration="MinSizeRel" /p:Platform="x64" /m
+	popd
 
 	pushd win10\arm\
 		echo Building curl Windows 10.0 MinSizeRel/Win32...
@@ -246,6 +277,16 @@ xcopy "%INDIR%\libeay32.dll" "%OUTDIR%\*" /iycq
 xcopy "%INDIR%\ssleay32.dll" "%OUTDIR%\*" /iycq
 
 set INDIR="temp\win10\win32\install\"
+xcopy "%INDIR%\bin\libcurl.dll" "%OUTDIR%\*" /iycqs
+xcopy "%INDIR%\lib\libcurl_imp.lib" "%OUTDIR%\*" /iycqs
+mv "%OUTDIR%\libcurl_imp.lib" "%OUTDIR%\libcurl.lib"
+
+set INDIR="%OpenSSL_DIR%\bin\Universal\10.0\Dll\Unicode\Release\x64"
+set OUTDIR=install\curl\prebuilt\win10\x64
+xcopy "%INDIR%\libeay32.dll" "%OUTDIR%\*" /iycq
+xcopy "%INDIR%\ssleay32.dll" "%OUTDIR%\*" /iycq
+
+set INDIR="temp\win10\x64\install\"
 xcopy "%INDIR%\bin\libcurl.dll" "%OUTDIR%\*" /iycqs
 xcopy "%INDIR%\lib\libcurl_imp.lib" "%OUTDIR%\*" /iycqs
 mv "%OUTDIR%\libcurl_imp.lib" "%OUTDIR%\libcurl.lib"
