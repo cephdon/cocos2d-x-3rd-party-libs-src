@@ -1,6 +1,6 @@
 @echo off
 
-set VERSION=3120100
+set VERSION=3120200
 set PHONE_URL=https://www.sqlite.org/2016/sqlite-wp81-winrt-%VERSION%.vsix
 set WINRT_URL=https://www.sqlite.org/2016/sqlite-winrt81-%VERSION%.vsix
 set WIN10_URL=https://www.sqlite.org/2016/sqlite-uwp-%VERSION%.vsix
@@ -63,9 +63,15 @@ set OUTDIR=install\sqlite3\libraries\win10\win32
 xcopy "%INDIR%\DesignTime\Retail\x86\sqlite3.lib" "%OUTDIR%\*" /iycq
 xcopy "%INDIR%\Redist\Retail\x86\sqlite3.dll" "%OUTDIR%\*" /iycq
 
+set OUTDIR=install\sqlite3\libraries\win10\x64
+xcopy "%INDIR%\DesignTime\Retail\x64\sqlite3.lib" "%OUTDIR%\*" /iycq
+xcopy "%INDIR%\Redist\Retail\x64\sqlite3.dll" "%OUTDIR%\*" /iycq
+
 set OUTDIR=install\sqlite3\libraries\win10\arm
 xcopy "%INDIR%\DesignTime\Retail\ARM\sqlite3.lib" "%OUTDIR%\*" /iycq
 xcopy "%INDIR%\Redist\Retail\ARM\sqlite3.dll" "%OUTDIR%\*" /iycq
+
+pause
 
 echo sqlite build complete.
 
