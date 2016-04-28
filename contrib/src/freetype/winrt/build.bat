@@ -69,6 +69,13 @@ pushd temp
 			set INSTALL=%CD%\install
 			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS%  %SRC%
 		popd
+		
+		mkdir x64
+		pushd x64
+			set INSTALL=%CD%\install
+			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS%  %SRC%
+		popd
+		
 		mkdir arm
 		pushd arm
 			set INSTALL=%CD%\install
@@ -98,6 +105,10 @@ pushd temp
 	msbuild win10\win32\freetype.sln /p:Configuration="MinSizeRel" /p:Platform="Win32" /p:ForceImportBeforeCppTargets=%PATCH% /m
 	msbuild win10\win32\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="Win32" /p:ForceImportBeforeCppTargets=%PATCH% /m
 
+	echo Building freetype Windows 10.0 Store Release/x64...
+	msbuild win10\x64\freetype.sln /p:Configuration="MinSizeRel" /p:Platform="x64" /p:ForceImportBeforeCppTargets=%PATCH% /m
+	msbuild win10\x64\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="x64" /p:ForceImportBeforeCppTargets=%PATCH% /m
+	
 	echo Building freetype Windows 10.0 Store Release/ARM...
 	msbuild win10\arm\freetype.sln /p:Configuration="MinSizeRel" /p:Platform="ARM" /p:ForceImportBeforeCppTargets=%PATCH% /m
 	msbuild win10\arm\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="ARM" /p:ForceImportBeforeCppTargets=%PATCH% /m
@@ -126,6 +137,10 @@ xcopy "%INDIR%\lib\freetype.lib" "%OUTDIR%\*" /iycq
 set INDIR=temp\win10\win32\install
 set OUTDIR=install\freetype2\prebuilt\win10\win32
 xcopy "%INDIR%\include" "install\freetype2\include\win10" /iycqs
+xcopy "%INDIR%\lib\freetype.lib" "%OUTDIR%\*" /iycq
+
+set INDIR=temp\win10\x64\install
+set OUTDIR=install\freetype2\prebuilt\win10\x64
 xcopy "%INDIR%\lib\freetype.lib" "%OUTDIR%\*" /iycq
 
 set INDIR=temp\win10\arm\install
