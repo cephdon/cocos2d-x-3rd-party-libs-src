@@ -21,7 +21,6 @@ pushd temp
 		curl -O -L %ANGLE_URL%
 	)
 	
-
 	unzip angle.windowsstore.%VERSION%.nupkg -d angle
 popd
 
@@ -34,6 +33,7 @@ xcopy "%INDIR%\Include" "%OUTDIR%" /iycqs
 set OUTDIR=install\win10-specific\angle\prebuilt
 xcopy "%INDIR%\bin\UAP\Win32" "%OUTDIR%\win32" /iycqs
 xcopy "%INDIR%\bin\UAP\ARM" "%OUTDIR%\arm" /iycqs
+xcopy "%INDIR%\bin\UAP\x64" "%OUTDIR%\x64" /iycqs
 
 set OUTDIR=install\winrt_8.1-specific\angle\include
 xcopy "%INDIR%\Include" "%OUTDIR%" /iycqs
