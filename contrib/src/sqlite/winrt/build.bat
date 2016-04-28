@@ -71,8 +71,6 @@ set OUTDIR=install\sqlite3\libraries\win10\arm
 xcopy "%INDIR%\DesignTime\Retail\ARM\sqlite3.lib" "%OUTDIR%\*" /iycq
 xcopy "%INDIR%\Redist\Retail\ARM\sqlite3.dll" "%OUTDIR%\*" /iycq
 
-pause
-
 echo sqlite build complete.
 
 
