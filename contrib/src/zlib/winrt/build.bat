@@ -1,165 +1,238 @@
 @echo off
+setlocal
 
-set VERSION="1.2.8"
+set VERSION=1.2.8
 set URL=http://downloads.sourceforge.net/project/libpng/zlib/%VERSION%/zlib-%VERSION%.tar.gz
-set CMAKE_ARGS=""
 
-if exist temp (
-	rm -rf temp
+set STARTDIR=%cd%
+set LOGFILE=%~dp0\build.log
+echo LOGFILE=%LOGFILE%
+
+call :DO_LOG "Starting zlib--%VERSION% build..."
+
+:: ---------------------------------------------------------------------------
+:: Clean previous build
+:: ---------------------------------------------------------------------------
+
+if exist %LOGFILE% (
+	rm -f %LOGFILE%
 )
 
 if exist install (
 	rm -rf install
 )
-
-mkdir temp
 mkdir install
+rem goto:install
 
-pushd temp
+if exist temp (
+	rm -rf temp
+)
+mkdir temp
 
-	if not exist zlib-%VERSION%.tar.gz (
-		echo Downloading zlib-%VERSION%.tar.gz...
+:: ---------------------------------------------------------------------------
+:: Download code if necessary
+:: ---------------------------------------------------------------------------
+
+pushd ..\..\..\tarballs
+	sha512sum --check ..\src\zlib\SHA512SUMS
+
+	if %ERRORLEVEL% NEQ 0 (
+
+		if exist zlib-%VERSION%.tar.gz (
+			rm zlib-%VERSION%.tar.gz
+		)
+		
+		call :DO_LOG "Downloading zlib-%VERSION%.tar.gz..."
 		curl -O -L %URL%
-	)
+	)	
+popd
 
-	echo Decompressing zlib-%VERSION%.tar.gz...
-	tar -xzf zlib-%VERSION%.tar.gz
+:: ---------------------------------------------------------------------------
+:: Decompress code
+:: ---------------------------------------------------------------------------
 
+call :DO_LOG "Decompressing zlib-%VERSION%.tar.gz..."
+tar -xzf ../../../tarballs/zlib-%VERSION%.tar.gz -C temp
+	
+:: ---------------------------------------------------------------------------
+:: Create Windows 10.0 and 8.1 project files using CMake
+:: ---------------------------------------------------------------------------
+	
+pushd temp
 	pushd zlib-%VERSION%
 		set SRC=%cd%
 	popd
 	
-	echo Generating project files with CMake...
+	call :DO_LOG "Generating project files with CMake..."
+	call :DO_CMAKE win10
+	call :DO_CMAKE wp_8.1
+	call :DO_CMAKE winrt_8.1
+popd
 
-	mkdir wp_8.1
-	pushd wp_8.1
+:: ---------------------------------------------------------------------------
+:: Build Windows 10.0 and 8.1 project files using CMake
+:: ---------------------------------------------------------------------------
+
+:build
+pushd temp
+	call "%VS140COMNTOOLS%vsvars32.bat"
+	
+	:: ---------------------------------------------------------------------------
+	:: build for Windows 10 Universal 
+	:: ---------------------------------------------------------------------------
+	call :DO_BUILD win10 Win32 MinSizeRel
+	call :DO_BUILD win10 arm MinSizeRel
+	call :DO_BUILD win10 x64 MinSizeRel
+	
+	:: ---------------------------------------------------------------------------
+	:: build for Windows Phone 8.1
+	:: ---------------------------------------------------------------------------
+	call :DO_BUILD wp_8.1 Win32 MinSizeRel
+	call :DO_BUILD wp_8.1 arm MinSizeRel
+	
+	:: ---------------------------------------------------------------------------
+	:: build for Windows Store 8.1
+	:: ---------------------------------------------------------------------------
+	call :DO_BUILD winrt_8.1 Win32 MinSizeRel
+	call :DO_BUILD winrt_8.1 arm MinSizeRel
+popd
+
+:: ---------------------------------------------------------------------------
+:: Install Windows 10.0 and 8.1 libs in cocos2d-x v3 folder format
+:: ---------------------------------------------------------------------------
+
+:install
+call :DO_LOG "Installing zlib..."
+
+call :DO_INSTALL wp_8.1 win32
+call :DO_INSTALL wp_8.1 arm
+call :DO_INSTALL winrt_8.1 win32
+call :DO_INSTALL winrt_8.1 arm
+call :DO_INSTALL win10 win32
+call :DO_INSTALL win10 arm
+call :DO_INSTALL win10 x64
+
+call :DO_LOG "zlib-%VERSION% build complete."
+
+endlocal
+goto:eof
+
+:: ---------------------------------------------------------------------------
+:: Subroutine to build for one solution, platform, and configuration
+:: ---------------------------------------------------------------------------
+:build_one_flavor
+@call :DO_LOG Starting build for solution %1, platform %2, configuration %3 >>%LOGFILE%
+msbuild %1 /p:Platform=%2;Configuration=%3
+if %ERRORLEVEL% NEQ 0 (
+    @call :DO_LOG Error building solution %1, platform %2, configuration %3 >>%LOGFILE%
+    exit /b
+)
+@call :DO_LOG Completed build for solution %1, platform %2, configuration %3 >>%LOGFILE%
+exit /b
+
+::--------------------------------------------------------
+::-- DO_LOG
+::		%~1 message to log
+::--------------------------------------------------------
+:DO_LOG
+	echo %~1
+	echo %~1 >> %LOGFILE%
+	goto:eof
+	
+::--------------------------------------------------------
+::-- DO_INSTALL
+::		%~1 Target (win10, wp8.1, winrt-8.1)
+::		%~2 Platform (win32, x64, arm)
+::--------------------------------------------------------
+:DO_INSTALL
+	setlocal
+	set TARGET=%~1
+	set PLATFORM=%~2
+	set INDIR=temp\%TARGET%\%PLATFORM%\install
+	set OUTDIR=install\%TARGET%-specific\zlib\prebuilt\%PLATFORM%
+	
+	call :DO_LOG "Installing zlib %TARGET%/%PLATFORM%..."
+		
+	xcopy "%INDIR%\include" "install\%TARGET%-specific\zlib\include\" /iycqs
+	xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
+	xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
+	xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
+	endlocal
+	goto:eof
+	
+::--------------------------------------------------------
+::-- DO_BUILD
+::		%~1 Target (win10, wp8.1, winrt-8.1)
+::		%~2 Platform (win32, x64, arm)
+::		%~3 Config (debug, release, MinSizeRel, etc.)
+::--------------------------------------------------------
+:DO_BUILD
+	setlocal
+	set TARGET=%~1
+	set PLATFORM=%~2
+	set CONFIG=%~3
+	call :DO_LOG "Building zlib %TARGET% %CONFIG%/%PLATFORM%..."
+	msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
+	endlocal
+	goto:eof
+	
+::--------------------------------------------------------
+::-- DO_CMAKE
+::		%~1 Target (win10, wp_8.1, winrt_8.1)
+::--------------------------------------------------------
+:DO_CMAKE
+	setlocal
+	set CMAKE_ARGS=""
+	set TARGET=%~1
+	
+	if %TARGET% == wp_8.1  (
+		set CMAKE_PLATFORM=WindowsPhone
+		set CMAKE_VERSION=8.1
+	)
+	if %TARGET% == winrt_8.1 (
+		set CMAKE_PLATFORM=WindowsStore
+		set CMAKE_VERSION=8.1	
+	)
+	if %TARGET% == win10 (
+		set CMAKE_PLATFORM=WindowsStore
+		set CMAKE_VERSION=10.0		
+	)
+	
+	mkdir %TARGET%
+	pushd %TARGET%
 		mkdir win32
 		pushd win32
 			set INSTALL=%CD%\install
-			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsPhone -DCMAKE_SYSTEM_VERSION=8.1  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
+			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 		popd
+		
 		mkdir arm
 		pushd arm
 			set INSTALL=%CD%\install
-			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=WindowsPhone -DCMAKE_SYSTEM_VERSION=8.1 -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
+			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 		popd
-	popd
-	
-	mkdir ws_8.1
-	pushd ws_8.1 
-		mkdir win32
-		pushd win32
-			set INSTALL=%CD%\install
-			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=8.1  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
-		popd
-		mkdir arm
-		pushd arm
-			set INSTALL=%CD%\install
-			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=8.1 -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
-		popd
-	popd
-	
-	mkdir win10
-	pushd win10 
-		mkdir win32
-		pushd win32
-			set INSTALL=%CD%\install
-			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
-		popd
+		
+		if %TARGET% NEQ win10 (
+			goto:end_cmake
+		)
 		
 		mkdir x64
 		pushd x64
 			set INSTALL=%CD%\install
-			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
+			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 		popd
 		
-		mkdir arm
-		pushd arm
-			set INSTALL=%CD%\install
-			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
-		popd
+:end_cmake
 	popd
 	
-	call "%VS140COMNTOOLS%vsvars32.bat"
+	endlocal
+	goto:eof
 
-	echo Building zlib Windows 8.1 Phone Release/Win32...
-	msbuild wp_8.1\win32\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
-	msbuild wp_8.1\win32\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
-	
-	echo Building zlib Windows 8.1 Phone Release/ARM...
-	msbuild wp_8.1\arm\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="ARM" /m
-	msbuild wp_8.1\arm\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="ARM" /m
-
-	echo Building zlib Windows 8.1 Store Release/Win32...
-	msbuild ws_8.1\win32\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
-	msbuild ws_8.1\win32\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
-
-	echo Building zlib Windows 8.1 Store Release/ARM...
-	msbuild ws_8.1\arm\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="ARM" /m
-	msbuild ws_8.1\arm\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="ARM" /m
-	
-	echo Building zlib Windows 10.0 Release/Win32...
-	msbuild win10\win32\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
-	msbuild win10\win32\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="Win32" /m
-
-	echo Building zlib Windows 10.0 Release/x64...
-	msbuild win10\x64\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="x64" /m
-	msbuild win10\x64\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="x64" /m
-
-	echo Building zlib Windows 10.0 Release/ARM...
-	msbuild win10\arm\zlib.sln /p:Configuration="MinSizeRel" /p:Platform="ARM" /m
-	msbuild win10\arm\INSTALL.vcxproj /p:Configuration="MinSizeRel" /p:Platform="ARM" /m
-popd
-
-
-echo Installing zlib...
-
-set INDIR=temp\wp_8.1\win32\install
-set OUTDIR=install\wp_8.1-specific\zlib\prebuilt\win32
-xcopy "%INDIR%\include" "install\wp_8.1-specific\zlib\include\" /iycqs
-xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
-
-set INDIR=temp\wp_8.1\arm\install
-set OUTDIR=install\wp_8.1-specific\zlib\prebuilt\arm
-xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
-
-set INDIR=temp\ws_8.1\win32\install
-set OUTDIR=install\winrt_8.1-specific\zlib\prebuilt\win32
-xcopy "%INDIR%\include" "install\winrt_8.1-specific\zlib\include\" /iycqs
-xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
-
-set INDIR=temp\ws_8.1\arm\install
-set OUTDIR=install\winrt_8.1-specific\zlib\prebuilt\arm
-xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
-
-set INDIR=temp\win10\win32\install
-set OUTDIR=install\win10-specific\zlib\prebuilt\win32
-xcopy "%INDIR%\include" "install\win10-specific\zlib\include\" /iycqs
-xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
-
-set INDIR=temp\win10\x64\install
-set OUTDIR=install\win10-specific\zlib\prebuilt\x64
-xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
-
-set INDIR=temp\win10\arm\install
-set OUTDIR=install\win10-specific\zlib\prebuilt\arm
-xcopy "%INDIR%\lib\zlibstatic.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\lib\zlib.lib" "%OUTDIR%\*" /iycq
-xcopy "%INDIR%\bin\zlib.dll" "%OUTDIR%\*" /iycq
-
-
-echo zlib build complete.
-
+:: ---------------------------------------------------------------------------
+:: In case of build failure, err out here
+:: ---------------------------------------------------------------------------
+:errorExit
+@call :DO_LOG "Error: one or more targets failed to build."
+cd /d %STARTDIR%
+goto :eof
 
