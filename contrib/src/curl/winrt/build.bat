@@ -43,8 +43,8 @@ pushd temp
 		pushd win32
 			set INSTALL=%CD%\install
 			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\prebuilt\win32\zlib.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\prebuilt\win32\zlib.lib"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\prebuilt\win32\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\prebuilt\win32\zlibstatic.lib"
 			
 			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
 
@@ -68,8 +68,8 @@ pushd temp
 		pushd arm
 			set INSTALL=%CD%\install
 			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\prebuilt\arm\zlib.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\prebuilt\arm\zlib.lib"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\prebuilt\arm\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\wp_8.1-specific\zlib\prebuilt\arm\zlibstatic.lib"
 			
 			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
 
@@ -96,8 +96,8 @@ pushd temp
 		pushd win32
 			set INSTALL=%CD%\install
 			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\prebuilt\win32\zlib.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\prebuilt\win32\zlib.lib"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\prebuilt\win32\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\prebuilt\win32\zlibstatic.lib"
 			
 			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
 
@@ -121,8 +121,8 @@ pushd temp
 		pushd arm
 			set INSTALL=%CD%\install
 			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\prebuilt\arm\zlib.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\prebuilt\arm\zlib.lib"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\prebuilt\arm\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\winrt_8.1-specific\zlib\prebuilt\arm\zlibstatic.lib"
 			
 			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
 
@@ -149,8 +149,8 @@ pushd temp
 		pushd win32
 			set INSTALL=%CD%\install
 			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\win32\zlib.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\win32\zlib.lib"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\win32\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\win32\zlibstatic.lib"
 			
 			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
 
@@ -174,8 +174,8 @@ pushd temp
 		pushd x64
 			set INSTALL=%CD%\install
 			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlib.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlib.lib"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlibstatic.lib"
 			
 			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
 
@@ -199,8 +199,8 @@ pushd temp
 		pushd arm
 			set INSTALL=%CD%\install
 			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\arm\zlib.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\arm\zlib.lib"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\arm\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\arm\zlibstatic.lib"
 			
 			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
 
