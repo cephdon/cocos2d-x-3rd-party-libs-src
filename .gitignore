@@ -53,3 +53,4 @@
 **/winrt/install
 **/winrt/temp
 **/winrt/cmake/install
+**/winrt/build.log
