@@ -1,12 +1,14 @@
+:: ---------------------------------------------------------------------------
+:: WinRT Build Script for zlib
+:: ---------------------------------------------------------------------------
+
 @echo off
 setlocal
 
 set VERSION=1.2.8
 set URL=http://downloads.sourceforge.net/project/libpng/zlib/%VERSION%/zlib-%VERSION%.tar.gz
-
 set STARTDIR=%cd%
 set LOGFILE=%~dp0\build.log
-echo LOGFILE=%LOGFILE%
 
 call :DO_LOG "Starting zlib--%VERSION% build..."
 
@@ -54,6 +56,7 @@ popd
 call :DO_LOG "Decompressing zlib-%VERSION%.tar.gz..."
 tar -xzf ../../../tarballs/zlib-%VERSION%.tar.gz -C temp
 	
+	
 :: ---------------------------------------------------------------------------
 :: Create Windows 10.0 and 8.1 project files using CMake
 :: ---------------------------------------------------------------------------
@@ -65,8 +68,13 @@ pushd temp
 	
 	call :DO_LOG "Generating project files with CMake..."
 	call :DO_CMAKE win10
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
+	
 	call :DO_CMAKE wp_8.1
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
+
 	call :DO_CMAKE winrt_8.1
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
 popd
 
 :: ---------------------------------------------------------------------------
@@ -81,20 +89,32 @@ pushd temp
 	:: build for Windows 10 Universal 
 	:: ---------------------------------------------------------------------------
 	call :DO_BUILD win10 Win32 MinSizeRel
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
+
 	call :DO_BUILD win10 arm MinSizeRel
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
+
 	call :DO_BUILD win10 x64 MinSizeRel
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
 	
 	:: ---------------------------------------------------------------------------
 	:: build for Windows Phone 8.1
 	:: ---------------------------------------------------------------------------
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
 	call :DO_BUILD wp_8.1 Win32 MinSizeRel
-	call :DO_BUILD wp_8.1 arm MinSizeRel
 	
+	call :DO_BUILD wp_8.1 arm MinSizeRel
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
+
 	:: ---------------------------------------------------------------------------
 	:: build for Windows Store 8.1
 	:: ---------------------------------------------------------------------------
 	call :DO_BUILD winrt_8.1 Win32 MinSizeRel
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
+
 	call :DO_BUILD winrt_8.1 arm MinSizeRel
+	if %ERRORLEVEL% NEQ 0 goto:error_exit
+
 popd
 
 :: ---------------------------------------------------------------------------
@@ -113,22 +133,17 @@ call :DO_INSTALL win10 arm
 call :DO_INSTALL win10 x64
 
 call :DO_LOG "zlib-%VERSION% build complete."
-
 endlocal
 goto:eof
 
-:: ---------------------------------------------------------------------------
-:: Subroutine to build for one solution, platform, and configuration
-:: ---------------------------------------------------------------------------
-:build_one_flavor
-@call :DO_LOG Starting build for solution %1, platform %2, configuration %3 >>%LOGFILE%
-msbuild %1 /p:Platform=%2;Configuration=%3
-if %ERRORLEVEL% NEQ 0 (
-    @call :DO_LOG Error building solution %1, platform %2, configuration %3 >>%LOGFILE%
-    exit /b
-)
-@call :DO_LOG Completed build for solution %1, platform %2, configuration %3 >>%LOGFILE%
-exit /b
+::--------------------------------------------------------
+::-- error_exit
+::		Note: Don't call anything that will change %ERRORLEVEL%
+::--------------------------------------------------------
+:error_exit
+endlocal
+exit \b %ERRORLEVEL%
+goto:eof
 
 ::--------------------------------------------------------
 ::-- DO_LOG
@@ -173,6 +188,11 @@ exit /b
 	set CONFIG=%~3
 	call :DO_LOG "Building zlib %TARGET% %CONFIG%/%PLATFORM%..."
 	msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
+	if %ERRORLEVEL% NEQ 0 (
+		call:DO_LOG "ERROR:DO_BUILD: msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m"
+		goto end_build
+	)
+:end_build		
 	endlocal
 	goto:eof
 	
@@ -204,12 +224,20 @@ exit /b
 		pushd win32
 			set INSTALL=%CD%\install
 			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
+			if %ERRORLEVEL% NEQ 0 (
+				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/win32"
+				goto end_cmake
+			) 
 		popd
 		
 		mkdir arm
 		pushd arm
 			set INSTALL=%CD%\install
 			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
+			if %ERRORLEVEL% NEQ 0 (
+				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/arm"
+				goto end_cmake
+			) 
 		popd
 		
 		if %TARGET% NEQ win10 (
@@ -220,19 +248,15 @@ exit /b
 		pushd x64
 			set INSTALL=%CD%\install
 			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
+			if %ERRORLEVEL% NEQ 0 (
+				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/x64"
+				goto end_cmake
+			) 
 		popd
 		
 :end_cmake
-	popd
-	
+	popd  
 	endlocal
 	goto:eof
 
-:: ---------------------------------------------------------------------------
-:: In case of build failure, err out here
-:: ---------------------------------------------------------------------------
-:errorExit
-@call :DO_LOG "Error: one or more targets failed to build."
-cd /d %STARTDIR%
-goto :eof
 
