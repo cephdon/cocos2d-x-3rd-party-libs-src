@@ -20,7 +20,6 @@ if exist %LOGFILE% (
 	rm -f %LOGFILE%
 )
 
-goto:build
 if exist install (
 	rm -rf install
 )
