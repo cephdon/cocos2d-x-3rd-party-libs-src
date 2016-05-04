@@ -20,6 +20,7 @@ if exist %LOGFILE% (
 	rm -f %LOGFILE%
 )
 
+goto:build
 if exist install (
 	rm -rf install
 )
@@ -187,6 +188,12 @@ goto:eof
 	set PLATFORM=%~2
 	set CONFIG=%~3
 	call :DO_LOG "Building zlib %TARGET% %CONFIG%/%PLATFORM%..."
+	
+	msbuild %CD%\%TARGET%\%PLATFORM%\zlib.sln /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
+	if %ERRORLEVEL% NEQ 0 (
+		call:DO_LOG "ERROR:DO_BUILD: msbuild %CD%\%TARGET%\%PLATFORM%\zlib.sln /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m"
+		goto end_build
+	)
 	msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
 	if %ERRORLEVEL% NEQ 0 (
 		call:DO_LOG "ERROR:DO_BUILD: msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m"
