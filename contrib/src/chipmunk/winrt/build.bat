@@ -193,8 +193,8 @@ goto:eof
 	set TARGET=%~1
 	set PLATFORM=%~2
 	set INDIR=temp\%TARGET%\%PLATFORM%\install
-	set OUTDIR=install\chipmunk\prebuilt\%PLATFORM%
-	
+	set OUTDIR=install\chipmunk\prebuilt\%TARGET%\%PLATFORM%
+
 	call :DO_LOG "Installing Chipmunk %TARGET%/%PLATFORM%..."
 
 	xcopy "%INDIR%\include" "install\chipmunk\include\" /iycqs
