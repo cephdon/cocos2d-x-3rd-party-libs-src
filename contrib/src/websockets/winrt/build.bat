@@ -13,8 +13,6 @@ SET PATCH=%~dp0\patch\winrt.patch
 
 call :DO_LOG "Starting libwebsockets-%SHA% build..."
 
-goto:install
-
 :: ---------------------------------------------------------------------------
 :: Clean previous build
 :: ---------------------------------------------------------------------------
@@ -173,6 +171,7 @@ call:DO_INSTALL winrt_8.1 win32
 call:DO_INSTALL winrt_8.1 arm
 
 call :DO_LOG "libwebsockets build complete."
+pause
 endlocal
 goto:eof
 
@@ -241,7 +240,7 @@ goto:eof
 ::--------------------------------------------------------
 :DO_CMAKE
 	setlocal
-	set CMAKE_ARGS=-DLWS_WITHOUT_TEST_SERVER:BOOL="1" -DLWS_IPV6:BOOL="0" -DLWS_WITHOUT_TEST_SERVER_EXTPOLL:BOOL="1" -DLWS_WITHOUT_TEST_FRAGGLE:BOOL="1" -DLWS_WITH_SSL:BOOL="0" -DLWS_WITHOUT_TEST_CLIENT:BOOL="1" -DCMAKE_CONFIGURATION_TYPES:STRING="Debug;Release;MinSizeRel;RelWithDebInfo" -DLWS_WITHOUT_TEST_PING:BOOL="1" -DLWS_WITHOUT_TESTAPPS:BOOL="1" 
+	set CMAKE_ARGS=-DLWS_WITHOUT_TEST_SERVER:BOOL="1" -DLWS_IPV6:BOOL="1" -DLWS_WITHOUT_TEST_SERVER_EXTPOLL:BOOL="1" -DLWS_WITHOUT_TEST_FRAGGLE:BOOL="1" -DLWS_WITH_SSL:BOOL="0" -DLWS_WITHOUT_TEST_CLIENT:BOOL="1" -DCMAKE_CONFIGURATION_TYPES:STRING="Debug;Release;MinSizeRel;RelWithDebInfo" -DLWS_WITHOUT_TEST_PING:BOOL="1" -DLWS_WITHOUT_TESTAPPS:BOOL="1" 
 	set TARGET=%~1
 	
 	if %TARGET% == wp_8.1  (
