@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set VERSION=2.1.8
+set VERSION=2.1.9
 set URL=http://api.nuget.org/packages/angle.windowsstore.%VERSION%.nupkg
 set STARTDIR=%cd%
 set LOGFILE=%~dp0\build.log
@@ -37,6 +37,7 @@ pushd ..\..\..\tarballs
 		if exist angle.windowsstore.%VERSION%.nupkg (
 			rm angle.windowsstore.%VERSION%.nupkg
 		)
+		
 		
 		call :DO_LOG "Downloading angle.windowsstore.%VERSION%.nupkg..."
 		curl -O -L %URL%
