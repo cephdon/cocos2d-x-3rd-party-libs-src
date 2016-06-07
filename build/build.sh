@@ -351,6 +351,10 @@ do
             export ANDROID_API=android-$build_api
         fi
 
+        if [ $cfg_platform_name = "tizen" ];then
+            export TIZEN_SDK_VERSION=$cfg_default_tizen_sdk_version
+        fi
+
 
         mkdir -p "${top_dir}/contrib/${cfg_platform_name}-${arch}"
         cd "${top_dir}/contrib/${cfg_platform_name}-${arch}"
@@ -361,6 +365,8 @@ do
         if [ $cfg_is_cross_compile = "no" ];then
             cfg_build_machine=${!my_target_host}
         fi
+
+        export BUILD_LIB=$lib
 
         ../bootstrap --enable-$lib \
                      --build=$cfg_build_machine \
