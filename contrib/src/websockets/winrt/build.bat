@@ -171,7 +171,6 @@ call:DO_INSTALL winrt_8.1 win32
 call:DO_INSTALL winrt_8.1 arm
 
 call :DO_LOG "libwebsockets build complete."
-pause
 endlocal
 goto:eof
 
