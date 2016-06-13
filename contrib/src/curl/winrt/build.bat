@@ -18,19 +18,35 @@ if exist temp (
 )
 mkdir temp
 
-pushd temp
-	if not exist curl-%VERSION%.tar.gz (
+:: ---------------------------------------------------------------------------
+:: Download code if necessary
+:: ---------------------------------------------------------------------------
+
+pushd ..\..\..\tarballs
+	sha512sum --check ..\src\curl\SHA512SUMS
+
+	if %ERRORLEVEL% NEQ 0 (
+
+		if exist curl-%VERSION%.tar.gz (
+			rm curl-%VERSION%.tar.gz
+		)
+		
+		echo "Downloading curl-%VERSION%.tar.gz..."
 		curl -O -L %URL%
-	)
+	)	
+popd
 
-	echo Decompressing curl-%VERSION%.tar.gz...
-	tar -xzf curl-%VERSION%.tar.gz
+:: ---------------------------------------------------------------------------
+:: Decompress code
+:: ---------------------------------------------------------------------------
 
-	pushd curl-%VERSION%
-		set SRC=%cd%
-		echo Applying winrt patch...
-		patch -p1 < %PATCH%
-	popd
+echo "Decompressing curl-%VERSION%.tar.gz..."
+tar -xzf ../../../tarballs/curl-%VERSION%.tar.gz -C temp
+
+pushd temp\curl-%VERSION%
+	set SRC=%cd%
+	echo Applying winrt patch...
+	patch -p1 < %PATCH%
 popd
 	
 :CMAKE
@@ -221,7 +237,7 @@ pushd temp
 		popd
 		
 	popd
-	
+
 	call "%VS140COMNTOOLS%vsvars32.bat"
 
 	pushd wp_8.1\win32\
