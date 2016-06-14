@@ -1,6 +1,6 @@
 diff -rupN curl-7.48.0/CMakeLists.txt curl-7.48.0-1/CMakeLists.txt
 --- curl-7.48.0/CMakeLists.txt	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/CMakeLists.txt	2016-06-13 13:42:45.080370700 -0700
++++ curl-7.48.0-1/CMakeLists.txt	2016-06-13 19:01:02.616696600 -0700
 @@ -1,4 +1,4 @@
 -#***************************************************************************
 + #***************************************************************************
@@ -23,15 +23,16 @@ diff -rupN curl-7.48.0/CMakeLists.txt curl-7.48.0-1/CMakeLists.txt
    check_library_exists_concat("winmm"  getch        HAVE_LIBWINMM)
  endif()
  
-@@ -812,7 +819,10 @@ check_symbol_exists(ioctl          "${CU
+@@ -811,8 +818,11 @@ check_symbol_exists(fcntl          "${CU
+ check_symbol_exists(ioctl          "${CURL_INCLUDES}" HAVE_IOCTL)
  check_symbol_exists(setsockopt     "${CURL_INCLUDES}" HAVE_SETSOCKOPT)
  
++unset (HAVE_INET_PTON CACHE)
++if(NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsPhone")
  # symbol exists in win32, but function does not.
 -check_function_exists(inet_pton HAVE_INET_PTON)
-+# not supported on Windows Phone
-+if(NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsPhone")
 +  check_function_exists(inet_pton HAVE_INET_PTON)
-+endif()
++endif(NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsPhone")
  
  # sigaction and sigsetjmp are special. Use special mechanism for
  # detecting those, but only if previous attempt failed.
@@ -55,7 +56,7 @@ diff -rupN curl-7.48.0/CMakeLists.txt curl-7.48.0-1/CMakeLists.txt
  
 diff -rupN curl-7.48.0/lib/config-win32.h curl-7.48.0-1/lib/config-win32.h
 --- curl-7.48.0/lib/config-win32.h	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/config-win32.h	2016-06-13 13:25:31.683390900 -0700
++++ curl-7.48.0-1/lib/config-win32.h	2016-06-13 18:55:41.378820100 -0700
 @@ -516,21 +516,21 @@
     /* The minimum build target for VS2012 is Vista unless Update 1 is installed
        and the v110_xp toolset is choosen. */
@@ -94,7 +95,7 @@ diff -rupN curl-7.48.0/lib/config-win32.h curl-7.48.0-1/lib/config-win32.h
  #    define HAVE_GETADDRINFO_THREADSAFE 1
 diff -rupN curl-7.48.0/lib/connect.c curl-7.48.0-1/lib/connect.c
 --- curl-7.48.0/lib/connect.c	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/connect.c	2016-06-13 13:25:31.683390900 -0700
++++ curl-7.48.0-1/lib/connect.c	2016-06-13 18:55:41.382820000 -0700
 @@ -953,6 +953,9 @@ void Curl_sndbufset(curl_socket_t sockfd
        if(osver.dwMajorVersion >= majorVersion)
          detectOsState = DETECT_OS_VISTA_OR_LATER;
@@ -107,7 +108,7 @@ diff -rupN curl-7.48.0/lib/connect.c curl-7.48.0-1/lib/connect.c
      OSVERSIONINFOEX osver;
 diff -rupN curl-7.48.0/lib/getenv.c curl-7.48.0-1/lib/getenv.c
 --- curl-7.48.0/lib/getenv.c	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/getenv.c	2016-06-13 13:25:31.683390900 -0700
++++ curl-7.48.0-1/lib/getenv.c	2016-06-13 18:55:41.386231300 -0700
 @@ -30,8 +30,10 @@
  static
  char *GetEnv(const char *variable)
@@ -123,7 +124,7 @@ diff -rupN curl-7.48.0/lib/getenv.c curl-7.48.0-1/lib/getenv.c
    char env[MAX_PATH]; /* MAX_PATH is from windef.h */
 diff -rupN curl-7.48.0/lib/smb.c curl-7.48.0-1/lib/smb.c
 --- curl-7.48.0/lib/smb.c	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/smb.c	2016-06-13 13:25:31.683390900 -0700
++++ curl-7.48.0-1/lib/smb.c	2016-06-13 18:55:41.390050900 -0700
 @@ -354,7 +354,15 @@ static void smb_format_message(struct co
    h->flags2 = smb_swap16(SMB_FLAGS2_IS_LONG_NAME | SMB_FLAGS2_KNOWS_LONG_NAME);
    h->uid = smb_swap16(smbc->uid);
@@ -143,7 +144,7 @@ diff -rupN curl-7.48.0/lib/smb.c curl-7.48.0-1/lib/smb.c
  }
 diff -rupN curl-7.48.0/lib/strerror.c curl-7.48.0-1/lib/strerror.c
 --- curl-7.48.0/lib/strerror.c	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/strerror.c	2016-06-13 13:25:31.683390900 -0700
++++ curl-7.48.0-1/lib/strerror.c	2016-06-13 18:55:41.393585700 -0700
 @@ -638,7 +638,9 @@ const char *Curl_strerror(struct connect
  
  #ifdef USE_WINSOCK
