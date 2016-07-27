@@ -1,8 +1,8 @@
 @echo off
 
-set VERSION=7.48.0
+set VERSION=7.50.0
 set URL=http://curl.haxx.se/download/curl-%VERSION%.tar.gz
-set CMAKE_ARGS=-DCURL_LDAP_WIN:BOOL="0" -DCMAKE_USE_OPENSSL:BOOL="1" -DCMAKE_USE_LIBSSH2:BOOL="0" -DENABLE_UNIX_SOCKETS:BOOL="0" -DENABLE_MANUAL:BOOL="0" -DBUILD_CURL_EXE:BOOL="0" -DBUILD_CURL_TESTS:BOOL="0" -DUSE_WIN32_LDAP:BOOL="0" -DCURL_DISABLE_TELNET:BOOL="1" -DENABLE_IPV6:BOOL="0"
+set CMAKE_ARGS=-DCMAKE_USE_OPENSSL:BOOL="1" -DCMAKE_USE_LIBSSH2:BOOL="0" -DENABLE_UNIX_SOCKETS:BOOL="0" -DENABLE_MANUAL:BOOL="0" -DBUILD_CURL_EXE:BOOL="0" -DBUILD_TESTING:BOOL="0" -DUSE_WIN32_LDAP:BOOL="0" -DCURL_DISABLE_TELNET:BOOL="1" -DENABLE_IPV6:BOOL="0"
 set ZLIB_DIR=%cd%\..\..\zlib\winrt\install
 set OpenSSL_DIR=%cd%\..\..\openssl\winrt\install
 SET PATCH=%cd%\patch\winrt.patch
@@ -32,6 +32,7 @@ pushd ..\..\..\tarballs
 		)
 		
 		echo "Downloading curl-%VERSION%.tar.gz..."
+		echo "Downloading curl-%VERSION%.tar.gz..."
 		curl -O -L %URL%
 	)	
 popd
@@ -48,11 +49,92 @@ pushd temp\curl-%VERSION%
 	echo Applying winrt patch...
 	patch -p1 < %PATCH%
 popd
-	
+
+
+
 :CMAKE
 pushd temp
 	echo Generating project files with CMake...
 
+		mkdir win10
+	pushd win10
+		mkdir win32
+		pushd win32
+			set INSTALL=%CD%\install
+			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\win32\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\win32\zlibstatic.lib"
+			
+			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
+
+			set SSL_EAY_LIBRARY_DEBUG=-DSSL_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\ssleay32.lib"
+			set SSL_EAY_DEBUG=-DSSL_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\ssleay32.lib"
+			set SSL_EAY_LIBRARY_RELEASE=-DSSL_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\ssleay32.lib"
+			set SSL_EAY_RELEASE=-DSSL_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\ssleay32.lib"
+			
+			set LIB_EAY_LIBRARY_DEBUG=-DLIB_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\libeay32.lib"
+			set LIB_EAY_DEBUG=-DLIB_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\libeay32.lib"
+			set LIB_EAY_LIBRARY_RELEASE=-DLIB_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\libeay32.lib"
+			set LIB_EAY_RELEASE=-DLIB_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\libeay32.lib"
+
+			
+			set ARGS=%CMAKE_ARGS% %ZIB_INCLUDE_DIR% %ZLIB_LIBRARY_RELEASE% %ZLIB_LIBRARY_DEBUG% %OPENSSL_INCLUDE_DIR% %SSL_EAY_LIBRARY_DEBUG% %SSL_EAY_DEBUG% %SSL_EAY_LIBRARY_RELEASE% %SSL_EAY_RELEASE% %LIB_EAY_LIBRARY_DEBUG% %LIB_EAY_DEBUG% %LIB_EAY_LIBRARY_RELEASE% %LIB_EAY_RELEASE%
+			echo %ARGS%
+			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS% %SRC%
+		popd
+		
+		mkdir x64
+		pushd x64
+			set INSTALL=%CD%\install
+			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlibstatic.lib"
+			
+			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
+
+			set SSL_EAY_LIBRARY_DEBUG=-DSSL_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
+			set SSL_EAY_DEBUG=-DSSL_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
+			set SSL_EAY_LIBRARY_RELEASE=-DSSL_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
+			set SSL_EAY_RELEASE=-DSSL_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
+			
+			set LIB_EAY_LIBRARY_DEBUG=-DLIB_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
+			set LIB_EAY_DEBUG=-DLIB_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
+			set LIB_EAY_LIBRARY_RELEASE=-DLIB_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
+			set LIB_EAY_RELEASE=-DLIB_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
+
+			
+			set ARGS=%CMAKE_ARGS% %ZIB_INCLUDE_DIR% %ZLIB_LIBRARY_RELEASE% %ZLIB_LIBRARY_DEBUG% %OPENSSL_INCLUDE_DIR% %SSL_EAY_LIBRARY_DEBUG% %SSL_EAY_DEBUG% %SSL_EAY_LIBRARY_RELEASE% %SSL_EAY_RELEASE% %LIB_EAY_LIBRARY_DEBUG% %LIB_EAY_DEBUG% %LIB_EAY_LIBRARY_RELEASE% %LIB_EAY_RELEASE%
+			echo %ARGS%
+			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS% %SRC%
+		popd
+		
+		mkdir arm
+		pushd arm
+			set INSTALL=%CD%\install
+			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
+			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\arm\zlibstatic.lib"
+			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\arm\zlibstatic.lib"
+			
+			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
+
+			set SSL_EAY_LIBRARY_DEBUG=-DSSL_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\ssleay32.lib"
+			set SSL_EAY_DEBUG=-DSSL_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\ssleay32.lib"
+			set SSL_EAY_LIBRARY_RELEASE=-DSSL_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\ssleay32.lib"
+			set SSL_EAY_RELEASE=-DSSL_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\ssleay32.lib"
+			
+			set LIB_EAY_LIBRARY_DEBUG=-DLIB_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\libeay32.lib"
+			set LIB_EAY_DEBUG=-DLIB_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\libeay32.lib"
+			set LIB_EAY_LIBRARY_RELEASE=-DLIB_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\libeay32.lib"
+			set LIB_EAY_RELEASE=-DLIB_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\libeay32.lib"
+
+			
+			set ARGS=%CMAKE_ARGS% %ZIB_INCLUDE_DIR% %ZLIB_LIBRARY_RELEASE% %ZLIB_LIBRARY_DEBUG% %OPENSSL_INCLUDE_DIR% %SSL_EAY_LIBRARY_DEBUG% %SSL_EAY_DEBUG% %SSL_EAY_LIBRARY_RELEASE% %SSL_EAY_RELEASE% %LIB_EAY_LIBRARY_DEBUG% %LIB_EAY_DEBUG% %LIB_EAY_LIBRARY_RELEASE% %LIB_EAY_RELEASE%
+			echo %ARGS%
+			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS% %SRC%
+		popd
+		
+	popd
+	
 	mkdir wp_8.1
 	pushd wp_8.1
 		mkdir win32
@@ -159,84 +241,7 @@ pushd temp
 		popd
 	popd
 	
-	mkdir win10
-	pushd win10
-		mkdir win32
-		pushd win32
-			set INSTALL=%CD%\install
-			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\win32\zlibstatic.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\win32\zlibstatic.lib"
-			
-			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
 
-			set SSL_EAY_LIBRARY_DEBUG=-DSSL_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\ssleay32.lib"
-			set SSL_EAY_DEBUG=-DSSL_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\ssleay32.lib"
-			set SSL_EAY_LIBRARY_RELEASE=-DSSL_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\ssleay32.lib"
-			set SSL_EAY_RELEASE=-DSSL_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\ssleay32.lib"
-			
-			set LIB_EAY_LIBRARY_DEBUG=-DLIB_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\libeay32.lib"
-			set LIB_EAY_DEBUG=-DLIB_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\libeay32.lib"
-			set LIB_EAY_LIBRARY_RELEASE=-DLIB_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\libeay32.lib"
-			set LIB_EAY_RELEASE=-DLIB_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\Win32\libeay32.lib"
-
-			
-			set ARGS=%CMAKE_ARGS% %ZIB_INCLUDE_DIR% %ZLIB_LIBRARY_RELEASE% %ZLIB_LIBRARY_DEBUG% %OPENSSL_INCLUDE_DIR% %SSL_EAY_LIBRARY_DEBUG% %SSL_EAY_DEBUG% %SSL_EAY_LIBRARY_RELEASE% %SSL_EAY_RELEASE% %LIB_EAY_LIBRARY_DEBUG% %LIB_EAY_DEBUG% %LIB_EAY_LIBRARY_RELEASE% %LIB_EAY_RELEASE%
-			echo %ARGS%
-			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS% %SRC%
-		popd
-		
-		mkdir x64
-		pushd x64
-			set INSTALL=%CD%\install
-			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlibstatic.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\x64\zlibstatic.lib"
-			
-			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
-
-			set SSL_EAY_LIBRARY_DEBUG=-DSSL_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
-			set SSL_EAY_DEBUG=-DSSL_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
-			set SSL_EAY_LIBRARY_RELEASE=-DSSL_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
-			set SSL_EAY_RELEASE=-DSSL_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\ssleay32.lib"
-			
-			set LIB_EAY_LIBRARY_DEBUG=-DLIB_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
-			set LIB_EAY_DEBUG=-DLIB_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
-			set LIB_EAY_LIBRARY_RELEASE=-DLIB_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
-			set LIB_EAY_RELEASE=-DLIB_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\x64\libeay32.lib"
-
-			
-			set ARGS=%CMAKE_ARGS% %ZIB_INCLUDE_DIR% %ZLIB_LIBRARY_RELEASE% %ZLIB_LIBRARY_DEBUG% %OPENSSL_INCLUDE_DIR% %SSL_EAY_LIBRARY_DEBUG% %SSL_EAY_DEBUG% %SSL_EAY_LIBRARY_RELEASE% %SSL_EAY_RELEASE% %LIB_EAY_LIBRARY_DEBUG% %LIB_EAY_DEBUG% %LIB_EAY_LIBRARY_RELEASE% %LIB_EAY_RELEASE%
-			echo %ARGS%
-			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS% %SRC%
-		popd
-		
-		mkdir arm
-		pushd arm
-			set INSTALL=%CD%\install
-			set ZIB_INCLUDE_DIR=-DZLIB_INCLUDE_DIR:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\include"
-			set ZLIB_LIBRARY_RELEASE=-DZLIB_LIBRARY_RELEASE:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\arm\zlibstatic.lib"
-			set ZLIB_LIBRARY_DEBUG=-DZLIB_LIBRARY_DEBUG:FILEPATH="%ZLIB_DIR%\win10-specific\zlib\prebuilt\arm\zlibstatic.lib"
-			
-			set OPENSSL_INCLUDE_DIR=-DOPENSSL_INCLUDE_DIR:FILEPATH="%OpenSSL_DIR%\include"
-
-			set SSL_EAY_LIBRARY_DEBUG=-DSSL_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\ssleay32.lib"
-			set SSL_EAY_DEBUG=-DSSL_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\ssleay32.lib"
-			set SSL_EAY_LIBRARY_RELEASE=-DSSL_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\ssleay32.lib"
-			set SSL_EAY_RELEASE=-DSSL_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\ssleay32.lib"
-			
-			set LIB_EAY_LIBRARY_DEBUG=-DLIB_EAY_LIBRARY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\libeay32.lib"
-			set LIB_EAY_DEBUG=-DLIB_EAY_DEBUG:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\libeay32.lib"
-			set LIB_EAY_LIBRARY_RELEASE=-DLIB_EAY_LIBRARY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\libeay32.lib"
-			set LIB_EAY_RELEASE=-DLIB_EAY_RELEASE:FILEPATH="%OpenSSL_DIR%\lib\Universal\10.0\Dll\Unicode\Release\arm\libeay32.lib"
-
-			
-			set ARGS=%CMAKE_ARGS% %ZIB_INCLUDE_DIR% %ZLIB_LIBRARY_RELEASE% %ZLIB_LIBRARY_DEBUG% %OPENSSL_INCLUDE_DIR% %SSL_EAY_LIBRARY_DEBUG% %SSL_EAY_DEBUG% %SSL_EAY_LIBRARY_RELEASE% %SSL_EAY_RELEASE% %LIB_EAY_LIBRARY_DEBUG% %LIB_EAY_DEBUG% %LIB_EAY_LIBRARY_RELEASE% %LIB_EAY_RELEASE%
-			echo %ARGS%
-			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0  -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %ARGS% %SRC%
-		popd
-		
-	popd
 
 	call "%VS140COMNTOOLS%vsvars32.bat"
 

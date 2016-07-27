@@ -1,13 +1,7 @@
-diff -rupN curl-7.48.0/CMakeLists.txt curl-7.48.0-1/CMakeLists.txt
---- curl-7.48.0/CMakeLists.txt	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/CMakeLists.txt	2016-06-13 19:01:02.616696600 -0700
-@@ -1,4 +1,4 @@
--#***************************************************************************
-+ #***************************************************************************
- #                                  _   _ ____  _
- #  Project                     ___| | | |  _ \| |
- #                             / __| | | | |_) | |
-@@ -289,7 +289,14 @@ check_function_exists(gethostname HAVE_G
+diff -rupN curl-7.50.0/CMakeLists.txt curl-7.50.0-1/CMakeLists.txt
+--- curl-7.50.0/CMakeLists.txt	2016-07-20 15:31:36.000000000 -0700
++++ curl-7.50.0-1/CMakeLists.txt	2016-07-25 15:56:05.241811600 -0700
+@@ -282,7 +282,14 @@ check_function_exists(gethostname HAVE_G
  set(OPENSSL_DEFAULT ON)
  if(WIN32)
    set(OPENSSL_DEFAULT OFF)
@@ -23,7 +17,7 @@ diff -rupN curl-7.48.0/CMakeLists.txt curl-7.48.0-1/CMakeLists.txt
    check_library_exists_concat("winmm"  getch        HAVE_LIBWINMM)
  endif()
  
-@@ -811,8 +818,11 @@ check_symbol_exists(fcntl          "${CU
+@@ -804,8 +811,11 @@ check_symbol_exists(fcntl          "${CU
  check_symbol_exists(ioctl          "${CURL_INCLUDES}" HAVE_IOCTL)
  check_symbol_exists(setsockopt     "${CURL_INCLUDES}" HAVE_SETSOCKOPT)
  
@@ -36,7 +30,7 @@ diff -rupN curl-7.48.0/CMakeLists.txt curl-7.48.0-1/CMakeLists.txt
  
  # sigaction and sigsetjmp are special. Use special mechanism for
  # detecting those, but only if previous attempt failed.
-@@ -1012,8 +1022,15 @@ include(CMake/OtherTests.cmake)
+@@ -1005,8 +1015,15 @@ include(CMake/OtherTests.cmake)
  
  add_definitions(-DHAVE_CONFIG_H)
  
@@ -54,9 +48,9 @@ diff -rupN curl-7.48.0/CMakeLists.txt curl-7.48.0-1/CMakeLists.txt
    add_definitions(-D_WIN32_WINNT=0x0501)
  endif(WIN32)
  
-diff -rupN curl-7.48.0/lib/config-win32.h curl-7.48.0-1/lib/config-win32.h
---- curl-7.48.0/lib/config-win32.h	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/config-win32.h	2016-06-13 18:55:41.378820100 -0700
+diff -rupN curl-7.50.0/lib/config-win32.h curl-7.50.0-1/lib/config-win32.h
+--- curl-7.50.0/lib/config-win32.h	2016-06-27 07:11:14.000000000 -0700
++++ curl-7.50.0-1/lib/config-win32.h	2016-07-25 15:56:48.372943200 -0700
 @@ -516,21 +516,21 @@
     /* The minimum build target for VS2012 is Vista unless Update 1 is installed
        and the v110_xp toolset is choosen. */
@@ -93,22 +87,56 @@ diff -rupN curl-7.48.0/lib/config-win32.h curl-7.48.0-1/lib/config-win32.h
  #    define HAVE_FREEADDRINFO           1
  #    define HAVE_GETADDRINFO            1
  #    define HAVE_GETADDRINFO_THREADSAFE 1
-diff -rupN curl-7.48.0/lib/connect.c curl-7.48.0-1/lib/connect.c
---- curl-7.48.0/lib/connect.c	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/connect.c	2016-06-13 18:55:41.382820000 -0700
-@@ -953,6 +953,9 @@ void Curl_sndbufset(curl_socket_t sockfd
-       if(osver.dwMajorVersion >= majorVersion)
-         detectOsState = DETECT_OS_VISTA_OR_LATER;
-     }
+diff -rupN curl-7.50.0/lib/connect.c curl-7.50.0-1/lib/connect.c
+--- curl-7.50.0/lib/connect.c	2016-07-20 15:31:36.000000000 -0700
++++ curl-7.50.0-1/lib/connect.c	2016-07-25 15:57:36.055621700 -0700
+@@ -950,11 +950,41 @@ void Curl_sndbufset(curl_socket_t sockfd
+   static int detectOsState = DETECT_OS_NONE;
+ 
+   if(detectOsState == DETECT_OS_NONE) {
+-    if(Curl_verify_windows_version(6, 0, PLATFORM_WINNT,
+-                                   VERSION_GREATER_THAN_EQUAL))
++#if !defined(_WIN32_WINNT) || !defined(_WIN32_WINNT_WIN2K) || \
++    (_WIN32_WINNT < _WIN32_WINNT_WIN2K)
++    OSVERSIONINFO osver;
++
++    memset(&osver, 0, sizeof(osver));
++    osver.dwOSVersionInfoSize = sizeof(osver);
++
++    detectOsState = DETECT_OS_PREVISTA;
++    if(GetVersionEx(&osver)) {
++      if(osver.dwMajorVersion >= majorVersion)
++        detectOsState = DETECT_OS_VISTA_OR_LATER;
++    }
 +#elif defined(_WIN32_WINNT) && defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT >= _WIN32_WINNT_WINBLUE) && defined(WINAPI_FAMILY) && \
 +	((WINAPI_FAMILY == WINAPI_FAMILY_APP) || (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) || (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP))
 +	// Do nothing since VerSetConditionMask & VerifyVersionInfo API are not supported in Windows Apps environment.
- #else
-     ULONGLONG cm;
-     OSVERSIONINFOEX osver;
-diff -rupN curl-7.48.0/lib/getenv.c curl-7.48.0-1/lib/getenv.c
---- curl-7.48.0/lib/getenv.c	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/getenv.c	2016-06-13 18:55:41.386231300 -0700
++#else
++    ULONGLONG cm;
++    OSVERSIONINFOEX osver;
++
++    memset(&osver, 0, sizeof(osver));
++    osver.dwOSVersionInfoSize = sizeof(osver);
++    osver.dwMajorVersion = majorVersion;
++
++    cm = VerSetConditionMask(0, VER_MAJORVERSION, VER_GREATER_EQUAL);
++    cm = VerSetConditionMask(cm, VER_MINORVERSION, VER_GREATER_EQUAL);
++    cm = VerSetConditionMask(cm, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
++    cm = VerSetConditionMask(cm, VER_SERVICEPACKMINOR, VER_GREATER_EQUAL);
++
++    if(VerifyVersionInfo(&osver, (VER_MAJORVERSION | VER_MINORVERSION |
++                                  VER_SERVICEPACKMAJOR | VER_SERVICEPACKMINOR),
++                         cm))
+       detectOsState = DETECT_OS_VISTA_OR_LATER;
+     else
+       detectOsState = DETECT_OS_PREVISTA;
++#endif
+   }
+ 
+   if(detectOsState == DETECT_OS_VISTA_OR_LATER)
+diff -rupN curl-7.50.0/lib/getenv.c curl-7.50.0-1/lib/getenv.c
+--- curl-7.50.0/lib/getenv.c	2016-06-27 07:11:14.000000000 -0700
++++ curl-7.50.0-1/lib/getenv.c	2016-07-25 15:58:05.143110200 -0700
 @@ -30,8 +30,10 @@
  static
  char *GetEnv(const char *variable)
@@ -122,9 +150,9 @@ diff -rupN curl-7.48.0/lib/getenv.c curl-7.48.0-1/lib/getenv.c
  #else
  #ifdef WIN32
    char env[MAX_PATH]; /* MAX_PATH is from windef.h */
-diff -rupN curl-7.48.0/lib/smb.c curl-7.48.0-1/lib/smb.c
---- curl-7.48.0/lib/smb.c	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/smb.c	2016-06-13 18:55:41.390050900 -0700
+diff -rupN curl-7.50.0/lib/smb.c curl-7.50.0-1/lib/smb.c
+--- curl-7.50.0/lib/smb.c	2016-07-20 15:31:36.000000000 -0700
++++ curl-7.50.0-1/lib/smb.c	2016-07-25 15:58:32.855787000 -0700
 @@ -354,7 +354,15 @@ static void smb_format_message(struct co
    h->flags2 = smb_swap16(SMB_FLAGS2_IS_LONG_NAME | SMB_FLAGS2_KNOWS_LONG_NAME);
    h->uid = smb_swap16(smbc->uid);
@@ -142,10 +170,10 @@ diff -rupN curl-7.48.0/lib/smb.c curl-7.48.0-1/lib/smb.c
    h->pid_high = smb_swap16((unsigned short)(pid >> 16));
    h->pid = smb_swap16((unsigned short) pid);
  }
-diff -rupN curl-7.48.0/lib/strerror.c curl-7.48.0-1/lib/strerror.c
---- curl-7.48.0/lib/strerror.c	2016-03-22 00:15:38.000000000 -0700
-+++ curl-7.48.0-1/lib/strerror.c	2016-06-13 18:55:41.393585700 -0700
-@@ -638,7 +638,9 @@ const char *Curl_strerror(struct connect
+diff -rupN curl-7.50.0/lib/strerror.c curl-7.50.0-1/lib/strerror.c
+--- curl-7.50.0/lib/strerror.c	2016-06-27 07:11:14.000000000 -0700
++++ curl-7.50.0-1/lib/strerror.c	2016-07-25 15:59:00.654848200 -0700
+@@ -641,7 +641,9 @@ const char *Curl_strerror(struct connect
  
  #ifdef USE_WINSOCK
  
@@ -156,3 +184,18 @@ diff -rupN curl-7.48.0/lib/strerror.c curl-7.48.0-1/lib/strerror.c
    {
      wchar_t wbuf[256];
      wbuf[0] = L'\0';
+diff -rupN curl-7.50.0/lib/system_win32.c curl-7.50.0-1/lib/system_win32.c
+--- curl-7.50.0/lib/system_win32.c	2016-07-20 15:31:36.000000000 -0700
++++ curl-7.50.0-1/lib/system_win32.c	2016-07-25 16:00:01.394967300 -0700
+@@ -82,8 +82,9 @@ bool Curl_verify_windows_version(const u
+                                  const VersionCondition condition)
+ {
+   bool matched = FALSE;
+-
+-#if !defined(_WIN32_WINNT) || !defined(_WIN32_WINNT_WIN2K) || \
++#if defined(WINAPI_FAMILY) && ((WINAPI_FAMILY == WINAPI_FAMILY_APP) || (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) || (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP))
++  return FALSE; // WinRT Apps don't support version detection
++#elif !defined(_WIN32_WINNT) || !defined(_WIN32_WINNT_WIN2K) || \
+     (_WIN32_WINNT < _WIN32_WINNT_WIN2K)
+   OSVERSIONINFO osver;
+ 
