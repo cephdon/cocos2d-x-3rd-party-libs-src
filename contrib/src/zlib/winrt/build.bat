@@ -7,8 +7,8 @@ setlocal
 
 set VERSION=1.2.8
 set URL=http://downloads.sourceforge.net/project/libpng/zlib/%VERSION%/zlib-%VERSION%.tar.gz
-set STARTDIR=%cd%
-set LOGFILE=%~dp0\build.log
+set STARTDIR="%CD%"
+set LOGFILE="%~dp0"\build.log
 
 call :DO_LOG "Starting zlib--%VERSION% build..."
 
@@ -49,6 +49,7 @@ pushd ..\..\..\tarballs
 	)	
 popd
 
+
 :: ---------------------------------------------------------------------------
 :: Decompress code
 :: ---------------------------------------------------------------------------
@@ -56,15 +57,16 @@ popd
 call :DO_LOG "Decompressing zlib-%VERSION%.tar.gz..."
 tar -xzf ../../../tarballs/zlib-%VERSION%.tar.gz -C temp
 	
-	
+
 :: ---------------------------------------------------------------------------
 :: Create Windows 10.0 and 8.1 project files using CMake
 :: ---------------------------------------------------------------------------
 	
 pushd temp
 	pushd zlib-%VERSION%
-		set SRC=%cd%
+		set SRC="%cd%"
 	popd
+
 	
 	call :DO_LOG "Generating project files with CMake..."
 	call :DO_CMAKE win10
@@ -76,6 +78,8 @@ pushd temp
 	call :DO_CMAKE winrt_8.1
 	if %ERRORLEVEL% NEQ 0 goto:error_exit
 popd
+
+
 
 :: ---------------------------------------------------------------------------
 :: Build Windows 10.0 and 8.1 project files using CMake
@@ -188,14 +192,14 @@ goto:eof
 	set CONFIG=%~3
 	call :DO_LOG "Building zlib %TARGET% %CONFIG%/%PLATFORM%..."
 	
-	msbuild %CD%\%TARGET%\%PLATFORM%\zlib.sln /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
+	msbuild "%CD%"\%TARGET%\%PLATFORM%\zlib.sln /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
 	if %ERRORLEVEL% NEQ 0 (
-		call:DO_LOG "ERROR:DO_BUILD: msbuild %CD%\%TARGET%\%PLATFORM%\zlib.sln /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m"
+		call:DO_LOG "ERROR:DO_BUILD: msbuild "%CD%"\%TARGET%\%PLATFORM%\zlib.sln /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m"
 		goto end_build
 	)
-	msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
+	msbuild "%CD%"\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
 	if %ERRORLEVEL% NEQ 0 (
-		call:DO_LOG "ERROR:DO_BUILD: msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m"
+		call:DO_LOG "ERROR:DO_BUILD: msbuild "%CD%"\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m"
 		goto end_build
 	)
 :end_build		
@@ -228,7 +232,7 @@ goto:eof
 	pushd %TARGET%
 		mkdir win32
 		pushd win32
-			set INSTALL=%CD%\install
+			set INSTALL="%CD%"\install
 			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 			if %ERRORLEVEL% NEQ 0 (
 				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/win32"
@@ -238,7 +242,7 @@ goto:eof
 		
 		mkdir arm
 		pushd arm
-			set INSTALL=%CD%\install
+			set INSTALL="%CD%"\install
 			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 			if %ERRORLEVEL% NEQ 0 (
 				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/arm"
@@ -252,7 +256,7 @@ goto:eof
 		
 		mkdir x64
 		pushd x64
-			set INSTALL=%CD%\install
+			set INSTALL="%CD%"\install
 			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 			if %ERRORLEVEL% NEQ 0 (
 				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/x64"

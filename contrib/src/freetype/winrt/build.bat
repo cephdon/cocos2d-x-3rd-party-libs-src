@@ -7,9 +7,9 @@ setlocal
 
 set VERSION="2.5.5"
 set URL=http://downloads.sourceforge.net/project/freetype/freetype2/%VERSION%/freetype-%VERSION%.tar.gz
-set STARTDIR=%cd%
-set LOGFILE=%~dp0\build.log
-SET PATCH=%cd%\patch\winrt.props
+set STARTDIR="%cd%"
+set LOGFILE="%~dp0"\build.log
+SET PATCH="%cd%"\patch\winrt.props
 
 call :DO_LOG "Starting freetype--%VERSION% build..."
 
@@ -66,7 +66,7 @@ tar -xzf ../../../tarballs/freetype-%VERSION%.tar.gz -C temp
 	
 pushd temp
 	pushd freetype-%VERSION%
-		set SRC=%cd%
+		set SRC="%cd%"
 	popd
 	
 	call :DO_LOG "Generating project files with CMake..."
@@ -189,9 +189,9 @@ goto:eof
 	set PLATFORM=%~2
 	set CONFIG=%~3
 	call :DO_LOG "Building freetype %TARGET% %CONFIG%/%PLATFORM%..."
-	msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /p:ForceImportBeforeCppTargets=%PATCH% /m
+	msbuild "%cd%"\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /p:ForceImportBeforeCppTargets=%PATCH% /m
 	if %ERRORLEVEL% NEQ 0 (
-		call:DO_LOG "ERROR:DO_BUILD: msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /p:ForceImportBeforeCppTargets=%PATCH%/m"
+		call:DO_LOG "ERROR:DO_BUILD: msbuild "%cd%"\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /p:ForceImportBeforeCppTargets=%PATCH%/m"
 		goto end_build
 	)
 	
@@ -225,7 +225,7 @@ goto:eof
 	pushd %TARGET%
 		mkdir win32
 		pushd win32
-			set INSTALL=%CD%\install
+			set INSTALL="%cd%"\install
 			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 			if %ERRORLEVEL% NEQ 0 (
 				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/win32"
@@ -235,7 +235,7 @@ goto:eof
 		
 		mkdir arm
 		pushd arm
-			set INSTALL=%CD%\install
+			set INSTALL="%cd%"\install
 			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 			if %ERRORLEVEL% NEQ 0 (
 				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/arm"
@@ -249,7 +249,7 @@ goto:eof
 		
 		mkdir x64
 		pushd x64
-			set INSTALL=%CD%\install
+			set INSTALL="%cd%"\install
 			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 			if %ERRORLEVEL% NEQ 0 (
 				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/x64"

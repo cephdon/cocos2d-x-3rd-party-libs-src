@@ -7,9 +7,9 @@ setlocal
 
 set SHA=15c92b1bf6a4562733b52e03b9e2f21421d180c6
 set URL=https://github.com/warmcat/libwebsockets/archive/%SHA%.tar.gz
-set STARTDIR=%cd%
-set LOGFILE=%~dp0\build.log
-SET PATCH=%~dp0\patch\winrt.patch
+set STARTDIR="%cd%"
+set LOGFILE="%~dp0"\build.log
+SET PATCH="%~dp0"\patch\winrt.patch
 
 call :DO_LOG "Starting libwebsockets-%SHA% build..."
 
@@ -84,7 +84,7 @@ popd
 	
 pushd temp
 	pushd libwebsockets-%SHA%
-		set SRC=%cd%
+		set SRC="%cd%"
 	popd
 	
 	call :DO_LOG "Generating project files with CMake..."
@@ -224,9 +224,9 @@ goto:eof
 	set PLATFORM=%~2
 	set CONFIG=%~3
 	call :DO_LOG "Building libwebsockets %TARGET% %CONFIG%/%PLATFORM%..."
-	msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
+	msbuild "%cd%"\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m
 	if %ERRORLEVEL% NEQ 0 (
-		call:DO_LOG "ERROR:DO_BUILD: msbuild %CD%\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m"
+		call:DO_LOG "ERROR:DO_BUILD: msbuild "%cd%"\%TARGET%\%PLATFORM%\INSTALL.vcxproj /p:Configuration="%CONFIG%" /p:Platform="%PLATFORM%" /m"
 		goto end_build
 	)
 :end_build		
@@ -259,7 +259,7 @@ goto:eof
 	pushd %TARGET%
 		mkdir win32
 		pushd win32
-			set INSTALL=%CD%\install
+			set INSTALL="%cd%"\install
 			cmake -G"Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 			if %ERRORLEVEL% NEQ 0 (
 				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/win32"
@@ -269,7 +269,7 @@ goto:eof
 		
 		mkdir arm
 		pushd arm
-			set INSTALL=%CD%\install
+			set INSTALL="%cd%"\install
 			cmake -G"Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 			if %ERRORLEVEL% NEQ 0 (
 				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/arm"
@@ -283,7 +283,7 @@ goto:eof
 		
 		mkdir x64
 		pushd x64
-			set INSTALL=%CD%\install
+			set INSTALL="%cd%"\install
 			cmake -G"Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=%CMAKE_PLATFORM% -DCMAKE_SYSTEM_VERSION=%CMAKE_VERSION% -DCMAKE_INSTALL_PREFIX:PATH=%INSTALL% %CMAKE_ARGS% %SRC%
 			if %ERRORLEVEL% NEQ 0 (
 				call:DO_LOG "ERROR:DO_CMAKE: %TARGET%/x64"
