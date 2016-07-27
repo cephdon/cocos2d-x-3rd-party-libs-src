@@ -1,0 +1,1 @@
+diff -rupN curl-7.50.0 curl-7.50.0-1 > winrt.patch
