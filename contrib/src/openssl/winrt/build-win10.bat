@@ -1,6 +1,9 @@
 @echo off
 
+
 Building OpenSSL for Windows 10.0...
+
+set _WKITS10VER=10.0.14393.0
 
 pushd temp
 	pushd openssl
